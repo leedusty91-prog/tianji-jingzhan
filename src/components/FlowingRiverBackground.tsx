@@ -15,6 +15,7 @@ export const FlowingRiverBackground: React.FC = () => {
   const animationFrameIdRef = useRef<number | null>(null);
 
   useEffect(() => {
+    isPlayingRef.current = true;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -38,7 +39,7 @@ export const FlowingRiverBackground: React.FC = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Define 4 waves with elegant ink-wash gradients and gold accents
+    // Define 4 waves with elegant ink-wash gradients and gold accents (richer contrast for high-end look)
     const waves: Wave[] = [
       {
         yFactor: 0.55,
@@ -46,7 +47,7 @@ export const FlowingRiverBackground: React.FC = () => {
         amplitude: 45,
         speed: 0.0035,
         offset: 0,
-        gradientColors: ['rgba(33, 33, 33, 0.12)', 'rgba(66, 66, 66, 0.06)'], // Deep ink
+        gradientColors: ['rgba(27, 38, 59, 0.22)', 'rgba(65, 90, 119, 0.08)'], // Rich slate ink
       },
       {
         yFactor: 0.68,
@@ -54,7 +55,7 @@ export const FlowingRiverBackground: React.FC = () => {
         amplitude: 35,
         speed: 0.006,
         offset: Math.PI / 2,
-        gradientColors: ['rgba(117, 117, 117, 0.15)', 'rgba(189, 189, 189, 0.05)'], // Misty grey
+        gradientColors: ['rgba(74, 85, 104, 0.25)', 'rgba(148, 163, 184, 0.08)'], // Deep misty grey
       },
       {
         yFactor: 0.8,
@@ -62,7 +63,7 @@ export const FlowingRiverBackground: React.FC = () => {
         amplitude: 55,
         speed: 0.0025,
         offset: Math.PI,
-        gradientColors: ['rgba(178, 146, 26, 0.09)', 'rgba(250, 243, 224, 0.03)'], // Subtle gold mist
+        gradientColors: ['rgba(197, 160, 89, 0.24)', 'rgba(230, 200, 140, 0.06)'], // Rich glorious gold mist
       },
       {
         yFactor: 0.88,
@@ -70,7 +71,7 @@ export const FlowingRiverBackground: React.FC = () => {
         amplitude: 25,
         speed: 0.0045,
         offset: Math.PI * 1.5,
-        gradientColors: ['rgba(40, 44, 52, 0.14)', 'rgba(74, 85, 104, 0.04)'], // Soft charcoal
+        gradientColors: ['rgba(15, 23, 42, 0.26)', 'rgba(30, 41, 59, 0.08)'], // Strong deep charcoal ink
       },
     ];
 
@@ -132,12 +133,12 @@ export const FlowingRiverBackground: React.FC = () => {
         
         if (idx === 2) {
           // Gold wave crest
-          ctx.strokeStyle = 'rgba(178, 146, 26, 0.28)';
-          ctx.lineWidth = 1.8;
+          ctx.strokeStyle = 'rgba(197, 160, 89, 0.45)';
+          ctx.lineWidth = 2.0;
         } else {
           // Ink-wash crest
-          ctx.strokeStyle = 'rgba(66, 66, 66, 0.12)';
-          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = 'rgba(66, 66, 66, 0.18)';
+          ctx.lineWidth = 1.4;
         }
         ctx.stroke();
 
@@ -147,6 +148,9 @@ export const FlowingRiverBackground: React.FC = () => {
 
       animationFrameIdRef.current = requestAnimationFrame(tick);
     };
+
+    // Draw first frame synchronously immediately on mount to prevent transparent canvas in background/headless environments
+    tick();
 
     animationFrameIdRef.current = requestAnimationFrame(tick);
 
@@ -186,7 +190,7 @@ export const FlowingRiverBackground: React.FC = () => {
         left: 0,
         width: '100vw',
         height: '100vh',
-        zIndex: -1, // Behind the content
+        zIndex: 1, // Render at z-index 1 to sit above browser's default viewport background but below app container (z-index 4)
         pointerEvents: 'none',
         display: 'block',
       }}
