@@ -38,39 +38,39 @@ export const FlowingRiverBackground: React.FC = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Define 4 waves with different frequencies, speeds, and bright colors
+    // Define 4 waves with elegant ink-wash gradients and gold accents
     const waves: Wave[] = [
       {
         yFactor: 0.55,
         length: 0.003,
         amplitude: 45,
-        speed: 0.004,
+        speed: 0.0035,
         offset: 0,
-        gradientColors: ['rgba(224, 242, 241, 0.45)', 'rgba(179, 229, 252, 0.35)'],
+        gradientColors: ['rgba(33, 33, 33, 0.12)', 'rgba(66, 66, 66, 0.06)'], // Deep ink
       },
       {
         yFactor: 0.68,
         length: 0.005,
         amplitude: 35,
-        speed: 0.007,
+        speed: 0.006,
         offset: Math.PI / 2,
-        gradientColors: ['rgba(179, 229, 252, 0.4)', 'rgba(128, 222, 234, 0.3)'],
+        gradientColors: ['rgba(117, 117, 117, 0.15)', 'rgba(189, 189, 189, 0.05)'], // Misty grey
       },
       {
         yFactor: 0.8,
         length: 0.004,
         amplitude: 55,
-        speed: 0.003,
+        speed: 0.0025,
         offset: Math.PI,
-        gradientColors: ['rgba(230, 244, 255, 0.5)', 'rgba(251, 230, 156, 0.18)'], // Gold hint
+        gradientColors: ['rgba(178, 146, 26, 0.09)', 'rgba(250, 243, 224, 0.03)'], // Subtle gold mist
       },
       {
         yFactor: 0.88,
         length: 0.006,
         amplitude: 25,
-        speed: 0.005,
+        speed: 0.0045,
         offset: Math.PI * 1.5,
-        gradientColors: ['rgba(128, 203, 196, 0.35)', 'rgba(179, 229, 252, 0.45)'],
+        gradientColors: ['rgba(40, 44, 52, 0.14)', 'rgba(74, 85, 104, 0.04)'], // Soft charcoal
       },
     ];
 
@@ -80,17 +80,26 @@ export const FlowingRiverBackground: React.FC = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
 
-      // Clear with a bright watercolor gradient representing sky/mist
+      // Clear with elegant off-white watercolor paper gradient
       ctx.clearRect(0, 0, w, h);
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
-      skyGrad.addColorStop(0, '#f2f8f7');
-      skyGrad.addColorStop(0.5, '#e0f2f1');
-      skyGrad.addColorStop(1, '#e1f5fe');
-      ctx.fillStyle = skyGrad;
+      const paperGrad = ctx.createLinearGradient(0, 0, 0, h);
+      paperGrad.addColorStop(0, '#FAF7F2');  // Warm off-white
+      paperGrad.addColorStop(0.5, '#F5F1E9');
+      paperGrad.addColorStop(1, '#EDE7DC');   // Soft ivory paper base
+      ctx.fillStyle = paperGrad;
       ctx.fillRect(0, 0, w, h);
 
+      // Draw subtle paper grain/noise to simulate actual watercolor paper
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.015)';
+      for (let i = 0; i < 80; i++) {
+        const x = Math.random() * w;
+        const y = Math.random() * h;
+        const size = Math.random() * 2 + 1;
+        ctx.fillRect(x, y, size, size);
+      }
+
       // Draw each wave
-      waves.forEach((wave) => {
+      waves.forEach((wave, idx) => {
         ctx.beginPath();
         
         const startY = h * wave.yFactor;
@@ -98,7 +107,6 @@ export const FlowingRiverBackground: React.FC = () => {
         ctx.moveTo(0, h);
         
         for (let x = 0; x <= w; x += 5) {
-          // Calculate wave height using sine wave function
           const y = startY + Math.sin(x * wave.length + wave.offset) * wave.amplitude;
           ctx.lineTo(x, y);
         }
@@ -113,6 +121,25 @@ export const FlowingRiverBackground: React.FC = () => {
 
         ctx.fillStyle = waveGrad;
         ctx.fill();
+
+        // Draw wave crest outlines (subtle gold strokes for specific waves, ink strokes for others)
+        ctx.beginPath();
+        for (let x = 0; x <= w; x += 8) {
+          const y = startY + Math.sin(x * wave.length + wave.offset) * wave.amplitude;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        
+        if (idx === 2) {
+          // Gold wave crest
+          ctx.strokeStyle = 'rgba(178, 146, 26, 0.28)';
+          ctx.lineWidth = 1.8;
+        } else {
+          // Ink-wash crest
+          ctx.strokeStyle = 'rgba(66, 66, 66, 0.12)';
+          ctx.lineWidth = 1.2;
+        }
+        ctx.stroke();
 
         // Update offset for animation
         wave.offset += wave.speed;
