@@ -2,7 +2,18 @@
 
 所有对「断易天机」系统的版本迭代及重大功能更新都记录于此。
 
+## [1.2.2] - 2026-05-21
+
+### 优化与修复 (Optimizations & Fixes)
+- **⚡ 修复 FlowingRiverBackground 重复动画循环导致的 CPU 爆表漏洞**：
+  - 移除了 React 挂载时 `tick()` 同步执行与 `requestAnimationFrame(tick)` 异步调度的重叠，彻底解决 concurrent animation loop 导致的 untracked animation frame 泄露。
+  - 极大降低了 Canvas 背景的 CPU/GPU 占用，动画帧率稳定在满帧 60 FPS，且在组件卸载后无任何后台资源残留。
+- **🧹 修复 BambooDivination 摇卦组件中未清除计时器导致的 AudioContext 与状态更新泄露**：
+  - 引入了 `shakeIntervalRef`、`startRevealTimeoutRef`、`stopCoinTimeoutRef` 和 `completeTimeoutRef` 追踪所有周期性及延时执行任务。
+  - 在组件 `useEffect` 卸载 cleanup 中对所有 active 计时器进行强制清除，彻底根除当用户在摇卦中途退出（卸载组件）时，残留的 callback 重新实例化已关闭的 Web Audio Context 导致的 permanent 内存/句柄泄露及 unmounted component state update 警告。
+
 ## [1.2.1] - 2026-05-21
+
 
 ### 新增功能
 - **📖 六爻爻辞与象传完整融合展示**：

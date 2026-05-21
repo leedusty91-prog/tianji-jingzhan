@@ -25,3 +25,10 @@
 - **页面返回时的组件状态重置**：
   - 在双页面流中，当用户从解卦页返回占卦页时，如果直接用简单的状态切换，占卜组件会保留上一次的「已完成」结果和硬币落地朝向。
   - **解决方案**：在 `<BambooDivination>` 挂载时传入 `key={viewState}`。当 `viewState` 发生切换时，React 会强制重置并重新挂载该组件，从而自动将其内部状态重置为 `'idle'`，提供干净无残留的二次起卦体验。
+- **Canvas 动画后台泄漏与 CPU 占用过高**：
+  - 在 React 挂载 Canvas 背景时，如果同步调用 `tick()` 又紧接着使用 `requestAnimationFrame(tick)` 调度，会导致在浏览器帧队列中注册两个重叠的动画循环。
+  - **解决方案**：仅同步调用 `tick()` 一次让其自循环，或只调用一次 `requestAnimationFrame`。组件卸载时强制 `isPlayingRef.current = false` 并 `cancelAnimationFrame`，避免后台静默 CPU/GPU 泄漏。
+- **组件卸载时残留异步计时器引发 AudioContext 与 React 状态泄露**：
+  - 如果用户在金钱起卦中途退出（卸载组件），未清除的 `setInterval` 和 `setTimeout` 会继续在后台运行，不仅会导致 unmounted component 状态更新警告，更会因为重新实例化已经 close 的 AudioContext 导致严重的句柄泄露。
+  - **解决方案**：引入 `shakeIntervalRef`、`startRevealTimeoutRef` 等 Refs，并在 `useEffect` 卸载 cleanup 中对所有 active 计时器进行强制清除。
+

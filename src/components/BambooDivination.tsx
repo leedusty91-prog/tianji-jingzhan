@@ -20,6 +20,13 @@ class DivinationAudioEngine {
     }
   }
 
+  close() {
+    if (this.ctx) {
+      this.ctx.close().catch(err => console.error('Error closing AudioContext:', err));
+      this.ctx = null;
+    }
+  }
+
   // Play a quick wood-metal collision click (rattle inside bamboo cylinder)
   playRattleClick() {
     this.init();
@@ -129,9 +136,20 @@ export const BambooDivination: React.FC<BambooDivinationProps> = ({ onHexagramGe
   );
   
   const audioEngineRef = useRef<DivinationAudioEngine | null>(null);
+  const shakeIntervalRef = useRef<any>(null);
+  const startRevealTimeoutRef = useRef<any>(null);
+  const stopCoinTimeoutRef = useRef<any>(null);
+  const completeTimeoutRef = useRef<any>(null);
 
   useEffect(() => {
     audioEngineRef.current = new DivinationAudioEngine();
+    return () => {
+      audioEngineRef.current?.close();
+      if (shakeIntervalRef.current) clearInterval(shakeIntervalRef.current);
+      if (startRevealTimeoutRef.current) clearTimeout(startRevealTimeoutRef.current);
+      if (stopCoinTimeoutRef.current) clearTimeout(stopCoinTimeoutRef.current);
+      if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
+    };
   }, []);
 
   const handleStartDivination = () => {
@@ -148,17 +166,20 @@ export const BambooDivination: React.FC<BambooDivinationProps> = ({ onHexagramGe
 
     // Play shaking sounds repeatedly
     let shakeCount = 0;
-    const shakeInterval = setInterval(() => {
+    if (shakeIntervalRef.current) clearInterval(shakeIntervalRef.current);
+    shakeIntervalRef.current = setInterval(() => {
       if (audioEngineRef.current && shakeCount < 10) {
         audioEngineRef.current.playRattleClick();
         shakeCount++;
       } else {
-        clearInterval(shakeInterval);
+        clearInterval(shakeIntervalRef.current);
+        shakeIntervalRef.current = null;
       }
     }, 150);
 
     // After 1.8s shaking, transition to revealing and stop them one by one
-    setTimeout(() => {
+    if (startRevealTimeoutRef.current) clearTimeout(startRevealTimeoutRef.current);
+    startRevealTimeoutRef.current = setTimeout(() => {
       setStep('revealing');
       stopCoinsSequentially();
     }, 1800);
@@ -174,7 +195,8 @@ export const BambooDivination: React.FC<BambooDivinationProps> = ({ onHexagramGe
     const stopNextCoin = () => {
       if (currentIndex >= 6) {
         // All coins have stopped
-        setTimeout(() => {
+        if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
+        completeTimeoutRef.current = setTimeout(() => {
           setStep('completed');
           if (audioEngineRef.current) {
             audioEngineRef.current.playZenGong();
@@ -211,7 +233,8 @@ export const BambooDivination: React.FC<BambooDivinationProps> = ({ onHexagramGe
 
       currentIndex++;
       // Stop next coin after 400ms
-      setTimeout(stopNextCoin, 400);
+      if (stopCoinTimeoutRef.current) clearTimeout(stopCoinTimeoutRef.current);
+      stopCoinTimeoutRef.current = setTimeout(stopNextCoin, 400);
     };
 
     stopNextCoin();

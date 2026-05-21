@@ -22,6 +22,8 @@ export const FlowingRiverBackground: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    let grainCanvas: HTMLCanvasElement | null = null;
+
     const resizeCanvas = () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -34,6 +36,21 @@ export const FlowingRiverBackground: React.FC = () => {
       
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
+
+      // Pre-render static premium watercolor paper grain
+      grainCanvas = document.createElement('canvas');
+      grainCanvas.width = width;
+      grainCanvas.height = height;
+      const gCtx = grainCanvas.getContext('2d');
+      if (gCtx) {
+        gCtx.fillStyle = 'rgba(0, 0, 0, 0.012)';
+        for (let i = 0; i < 300; i++) { // More abundant but subtler spots
+          const x = Math.random() * width;
+          const y = Math.random() * height;
+          const size = Math.random() * 1.8 + 0.6;
+          gCtx.fillRect(x, y, size, size);
+        }
+      }
     };
 
     resizeCanvas();
@@ -91,12 +108,8 @@ export const FlowingRiverBackground: React.FC = () => {
       ctx.fillRect(0, 0, w, h);
 
       // Draw subtle paper grain/noise to simulate actual watercolor paper
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.015)';
-      for (let i = 0; i < 80; i++) {
-        const x = Math.random() * w;
-        const y = Math.random() * h;
-        const size = Math.random() * 2 + 1;
-        ctx.fillRect(x, y, size, size);
+      if (grainCanvas) {
+        ctx.drawImage(grainCanvas, 0, 0);
       }
 
       // Draw each wave
@@ -149,10 +162,9 @@ export const FlowingRiverBackground: React.FC = () => {
       animationFrameIdRef.current = requestAnimationFrame(tick);
     };
 
-    // Draw first frame synchronously immediately on mount to prevent transparent canvas in background/headless environments
+    // Draw first frame synchronously immediately on mount to prevent transparent canvas in background/headless environments.
+    // The synchronous call to tick() will schedule the next frame and start the loop correctly.
     tick();
-
-    animationFrameIdRef.current = requestAnimationFrame(tick);
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
