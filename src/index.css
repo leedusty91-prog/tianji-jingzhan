@@ -38,8 +38,8 @@
   padding: 0;
 }
 
-body {
-  background: var(--bg-cosmic);
+html, body {
+  background: transparent !important;
   color: var(--text-primary);
   font-family: var(--font-sans);
   min-height: 100vh;
